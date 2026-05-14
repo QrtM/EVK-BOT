@@ -457,17 +457,23 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 # ─── MAIN ───
-def main():
-    app = (
-        Application.builder()
-        .token(TOKEN)
-        .build()
-    )
+import asyncio
+
+async def run_bot():
+    app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_phone))
     logger.info("✅ ЭВК бот запущен!")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    async with app:
+        await app.start()
+        await app.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+        await asyncio.sleep(float('inf'))
+        await app.updater.stop()
+        await app.stop()
+
+def main():
+    asyncio.run(run_bot())
 
 if __name__ == "__main__":
     main()
